@@ -209,7 +209,7 @@ ERL_NIF_TERM nif_etrie_lookup(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[
     try
     {
         auto value = &enif_obj->trie->at_ks(BIN_TO_STR(key.data), key.size);
-        
+
         ERL_NIF_TERM value_term;
         if(!value->to_nif(env, &value_term))
             return make_error(env, "failed to decode data");
@@ -225,18 +225,44 @@ ERL_NIF_TERM nif_etrie_lookup(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[
 ERL_NIF_TERM nif_etrie_is_member(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 {
     UNUSED(argc);
-    
+
     enif_etrie* enif_obj = get_enif_trie(env, argv[0]);
-    
+
     if(enif_obj == nullptr)
         return make_badarg(env);
-    
+
     ErlNifBinary key;
-    
+
     if(!get_binary(env, argv[1], &key))
         return make_badarg(env);
-    
+
     return make_ok_result(env, enif_obj->trie->count_ks(BIN_TO_STR(key.data), key.size)? ATOMS.atomTrue : ATOMS.atomFalse);
+}
+
+ERL_NIF_TERM nif_etrie_to_list(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+    UNUSED(argc);
+
+    enif_etrie* enif_obj = get_enif_trie(env, argv[0]);
+
+    if(enif_obj == nullptr)
+        return make_badarg(env);
+
+    std::string key_buffer;
+    ERL_NIF_TERM list = enif_make_list(env, 0);
+
+    for(auto it = enif_obj->trie->begin(); it != enif_obj->trie->end(); ++it)
+    {
+        it.key(key_buffer);
+        ERL_NIF_TERM value_term;
+
+        if(!it.value().to_nif(env, &value_term))
+            return make_error(env, "failed to decode data");
+
+        list = enif_make_list_cell(env, enif_make_tuple2(env, make_binary(env, key_buffer), value_term),list);
+    }
+
+    return make_ok_result(env, list);
 }
 
 ERL_NIF_TERM nif_etrie_insert(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
@@ -277,12 +303,12 @@ ERL_NIF_TERM nif_etrie_remove(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[
 
     ErlNifBinary key;
     bool prefix;
-    
+
     if(!get_binary(env, argv[1], &key) || !get_boolean(argv[2], &prefix))
         return make_badarg(env);
 
     size_t elements;
-    
+
     if(prefix)
         elements = enif_obj->trie->erase_prefix_ks(BIN_TO_STR(key.data), key.size);
     else

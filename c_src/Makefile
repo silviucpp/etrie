@@ -24,6 +24,8 @@ ifeq ($(UNAME_SYS), darwin)
 				-Wl,-U,_enif_is_binary \
 				-Wl,-U,_enif_is_identical \
 				-Wl,-U,_enif_is_list \
+				-Wl,-U,_enif_make_list \
+				-Wl,-U,_enif_make_list_cell \
 				-Wl,-U,_enif_make_copy \
 				-Wl,-U,_enif_make_long \
 				-Wl,-U,_enif_make_ulong \

@@ -15,6 +15,7 @@ ERL_NIF_TERM nif_etrie_clear(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]
 ERL_NIF_TERM nif_etrie_longest_prefix(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]);
 ERL_NIF_TERM nif_etrie_lookup(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]);
 ERL_NIF_TERM nif_etrie_is_member(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]);
+ERL_NIF_TERM nif_etrie_to_list(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]);
 ERL_NIF_TERM nif_etrie_insert(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]);
 ERL_NIF_TERM nif_etrie_remove(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]);
 

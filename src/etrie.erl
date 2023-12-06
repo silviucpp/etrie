@@ -5,6 +5,7 @@
     new/1,
     from_list/1,
     from_list/2,
+    to_list/1,
     insert/3,
     remove/2,
     remove_prefix/2,
@@ -44,6 +45,12 @@ from_list(Items, BurstThreshold) ->
 
 -spec insert(reference(), binary(), term()) ->
     ok | {error, any()}.
+
+-spec to_list(reference()) ->
+    {ok, [{binary(), term()}]} | {error, any()}.
+
+to_list(Ref) ->
+    etrie_nif:to_list(Ref).
 
 insert(Ref, Key, Value) ->
     etrie_nif:insert(Ref, Key, Value).

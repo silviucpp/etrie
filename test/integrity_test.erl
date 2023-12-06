@@ -46,6 +46,8 @@ basic_ops_test() ->
     ?assertEqual(ok, etrie:insert(T, <<"three">>, 3)),
     ?assertEqual(ok, etrie:insert(T, <<"four">>, 4)),
 
+    ?assertEqual( {ok,[{<<"four">>,4}, {<<"two">>,2}, {<<"three">>,3}, {<<"one">>,1}]}, etrie:to_list(T)),
+
     ?assertEqual({ok, 4}, etrie:lookup(T, <<"four">>)),
     ?assertEqual(null, etrie:lookup(T, <<"N/A">>)),
 

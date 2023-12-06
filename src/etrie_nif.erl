@@ -15,6 +15,7 @@
     longest_prefix/2,
     lookup/2,
     is_member/2,
+    to_list/1,
     get_burst_threshold/1,
     set_burst_threshold/2
 ]).
@@ -57,6 +58,9 @@ lookup(_Ref, _Prefix) ->
     ?NOT_LOADED.
 
 is_member(_Ref, _Prefix) ->
+    ?NOT_LOADED.
+
+to_list(_Ref) ->
     ?NOT_LOADED.
 
 get_burst_threshold(_Ref) ->
