@@ -25,7 +25,7 @@ static ErlNifFunc nif_funcs[] = {
     {"set_burst_threshold", 2, nif_etrie_set_burst_threshold},
     {"clear", 1, nif_etrie_clear},
     {"longest_prefix", 2, nif_etrie_longest_prefix},
-    {"lookup", 2, nif_etrie_lookup},
+    {"lookup", 3, nif_etrie_lookup},
     {"is_member", 2, nif_etrie_is_member},
     {"to_list", 1, nif_etrie_to_list, ERL_NIF_DIRTY_JOB_IO_BOUND},
     {"insert", 3, nif_etrie_insert},

@@ -13,7 +13,7 @@
     is_empty/1,
     size/1,
     longest_prefix/2,
-    lookup/2,
+    lookup/3,
     is_member/2,
     to_list/1,
     get_burst_threshold/1,
@@ -51,10 +51,10 @@ is_empty(_Ref) ->
 size(_Ref) ->
     ?NOT_LOADED.
 
-longest_prefix(_Ref, _Prefix) ->
+longest_prefix(_Ref, _IsPrefix) ->
     ?NOT_LOADED.
 
-lookup(_Ref, _Prefix) ->
+lookup(_Ref, _Key, _IsPrefix) ->
     ?NOT_LOADED.
 
 is_member(_Ref, _Prefix) ->

@@ -202,24 +202,48 @@ ERL_NIF_TERM nif_etrie_lookup(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[
         return make_badarg(env);
 
     ErlNifBinary key;
+    bool prefix;
 
-    if(!get_binary(env, argv[1], &key))
+    if(!get_binary(env, argv[1], &key) || !get_boolean(argv[2], &prefix))
         return make_badarg(env);
 
-    try
+    if(prefix)
     {
-        auto value = &enif_obj->trie->at_ks(BIN_TO_STR(key.data), key.size);
+        auto prefix_range = enif_obj->trie->equal_prefix_range_ks(BIN_TO_STR(key.data), key.size);
+        std::string key_buffer;
+        ERL_NIF_TERM list = enif_make_list(env, 0);
 
-        ERL_NIF_TERM value_term;
-        if(!value->to_nif(env, &value_term))
-            return make_error(env, "failed to decode data");
+        for(auto it = prefix_range.first; it != prefix_range.second; ++it)
+        {
+            it.key(key_buffer);
+            ERL_NIF_TERM value_term;
 
-        return make_ok_result(env, value_term);
+            if(!it.value().to_nif(env, &value_term))
+                return make_error(env, "failed to decode data");
+
+            list = enif_make_list_cell(env, enif_make_tuple2(env, make_binary(env, key_buffer), value_term), list);
+        }
+        
+        return make_ok_result(env, list);
     }
-    catch (std::out_of_range &ex)
+    else
     {
-        return ATOMS.atomNull;
+        try
+        {
+            auto value = &enif_obj->trie->at_ks(BIN_TO_STR(key.data), key.size);
+            
+            ERL_NIF_TERM value_term;
+            if(!value->to_nif(env, &value_term))
+                return make_error(env, "failed to decode data");
+            
+            return make_ok_result(env, value_term);
+        }
+        catch (std::out_of_range &ex)
+        {
+            return ATOMS.atomNull;
+        }
     }
+    
 }
 
 ERL_NIF_TERM nif_etrie_is_member(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])

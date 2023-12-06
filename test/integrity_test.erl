@@ -50,6 +50,8 @@ basic_ops_test() ->
 
     ?assertEqual({ok, 4}, etrie:lookup(T, <<"four">>)),
     ?assertEqual(null, etrie:lookup(T, <<"N/A">>)),
+    ?assertEqual({ok,[{<<"two">>,2},{<<"three">>,3}]}, etrie:lookup_range(T, <<"t">>)),
+    ?assertEqual({ok,[]}, etrie:lookup_range(T, <<"N/A">>)),
 
     ?assertEqual(4, etrie:size(T)),
     ?assertEqual(false, etrie:is_empty(T)),

@@ -14,6 +14,7 @@
     size/1,
     longest_prefix/2,
     lookup/2,
+    lookup_range/2,
     is_member/2,
     get_burst_threshold/1,
     set_burst_threshold/2
@@ -92,10 +93,16 @@ longest_prefix(Ref, Prefix) ->
     etrie_nif:longest_prefix(Ref, Prefix).
 
 -spec lookup(reference(), binary()) ->
-    null | {ok, MatchingValue::term()} | {error, any()}.
+    null | {ok, term()} | {error, any()}.
 
-lookup(Ref, Prefix) ->
-    etrie_nif:lookup(Ref, Prefix).
+lookup(Ref, Key) ->
+    etrie_nif:lookup(Ref, Key, false).
+
+-spec lookup_range(reference(), binary()) ->
+    {ok, [{binary(), term()}]} | {error, any()}.
+
+lookup_range(Ref, Prefix) ->
+    etrie_nif:lookup(Ref, Prefix, true).
 
 -spec is_member(reference(), binary()) ->
     {ok, boolean()} | {error, any()}.
