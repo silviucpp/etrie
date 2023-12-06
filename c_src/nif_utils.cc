@@ -24,6 +24,11 @@ ERL_NIF_TERM make_binary(ErlNifEnv* env, const char* buff, size_t length)
     return term;
 }
 
+ERL_NIF_TERM make_binary(ErlNifEnv* env, const std::string& str)
+{
+    return make_binary(env, str.data(), str.size());
+}
+
 ERL_NIF_TERM make_error(ErlNifEnv* env, const char* error)
 {
     return make_error(env, make_binary(env, error, strlen(error)));

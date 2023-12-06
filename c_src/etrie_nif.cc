@@ -25,7 +25,10 @@ static ErlNifFunc nif_funcs[] = {
     {"set_burst_threshold", 2, nif_etrie_set_burst_threshold},
     {"clear", 1, nif_etrie_clear},
     {"longest_prefix", 2, nif_etrie_longest_prefix},
-    {"insert", 3, nif_etrie_insert}
+    {"lookup", 2, nif_etrie_lookup},
+    {"is_member", 2, nif_etrie_is_member},
+    {"insert", 3, nif_etrie_insert},
+    {"remove", 3, nif_etrie_remove},
 };
 
 void open_resources(ErlNifEnv* env, etrie_data* data)

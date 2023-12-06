@@ -3,6 +3,39 @@
 -include_lib("eunit/include/eunit.hrl").
 -include("etrie.hrl").
 
+data_type_mapping_test() ->
+    {ok, T} = etrie:new(),
+
+    IntVal = 1,
+    UintVal = -1,
+    Atom = true,
+    Binary = <<"some text in binary">>,
+    Float = 12344.4,
+    FloatNeg = -4532.45,
+    Other = ["1", "4", atom, 12],
+    Other2 = {something, <<"ssd">>, ["1", "4", atom, 12]},
+
+    ?assertEqual(ok, etrie:insert(T, <<"int">>, IntVal)),
+    ?assertEqual(ok, etrie:insert(T, <<"uint">>, UintVal)),
+    ?assertEqual(ok, etrie:insert(T, <<"atom">>, Atom)),
+    ?assertEqual(ok, etrie:insert(T, <<"binary">>, Binary)),
+    ?assertEqual(ok, etrie:insert(T, <<"float">>, Float)),
+    ?assertEqual(ok, etrie:insert(T, <<"float_neg">>, FloatNeg)),
+    ?assertEqual(ok, etrie:insert(T, <<"other">>, Other)),
+    ?assertEqual(ok, etrie:insert(T, <<"othe2">>, Other2)),
+
+    ?assertEqual({ok, IntVal}, etrie:lookup(T, <<"int">>)),
+    ?assertEqual({ok, UintVal}, etrie:lookup(T, <<"uint">>)),
+    ?assertEqual({ok, Atom}, etrie:lookup(T, <<"atom">>)),
+    ?assertEqual({ok, Binary}, etrie:lookup(T, <<"binary">>)),
+    ?assertEqual({ok, Float}, etrie:lookup(T, <<"float">>)),
+    ?assertEqual({ok, FloatNeg}, etrie:lookup(T, <<"float_neg">>)),
+    ?assertEqual({ok, Other}, etrie:lookup(T, <<"other">>)),
+    ?assertEqual({ok, Other2}, etrie:lookup(T, <<"othe2">>)),
+
+    ?assertEqual(ok, etrie:clear(T)),
+    ok.
+
 basic_ops_test() ->
     {ok, T} = etrie:new(),
     ?assertEqual(0, etrie:size(T)),
@@ -13,8 +46,24 @@ basic_ops_test() ->
     ?assertEqual(ok, etrie:insert(T, <<"three">>, 3)),
     ?assertEqual(ok, etrie:insert(T, <<"four">>, 4)),
 
+    ?assertEqual({ok, 4}, etrie:lookup(T, <<"four">>)),
+    ?assertEqual(null, etrie:lookup(T, <<"N/A">>)),
+
     ?assertEqual(4, etrie:size(T)),
     ?assertEqual(false, etrie:is_empty(T)),
+
+    ?assertEqual({ok, true}, etrie:is_member(T, <<"one">>)),
+    ?assertEqual({ok, false}, etrie:is_member(T, <<"ONE">>)),
+
+    ?assertEqual({ok, 1}, etrie:remove(T, <<"one">>)),
+    ?assertEqual({ok, 0}, etrie:remove(T, <<"ONE">>)),
+
+    ?assertEqual(3, etrie:size(T)),
+
+    ?assertEqual({ok, 2}, etrie:remove_prefix(T, <<"t">>)),
+    ?assertEqual({ok, 0}, etrie:remove_prefix(T, <<"T">>)),
+
+    ?assertEqual(1, etrie:size(T)),
 
     {ok, T2} = etrie:from_list([{<<"apple">>, 1}, {<<"mango">>, 2}, {<<"apricot">>, 3}, {<<"mandarin">>, 4}, {<<"melon">>, 5}, {<<"macadamia">>, 6}]),
     ?assertEqual({ok, <<"apple">>, 1}, etrie:longest_prefix(T2, <<"apple juice">>)),

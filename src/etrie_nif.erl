@@ -8,12 +8,15 @@
     new/1,
     new/2,
     insert/3,
+    remove/3,
+    clear/1,
     is_empty/1,
     size/1,
+    longest_prefix/2,
+    lookup/2,
+    is_member/2,
     get_burst_threshold/1,
-    set_burst_threshold/2,
-    clear/1,
-    longest_prefix/2
+    set_burst_threshold/2
 ]).
 
 % nif functions
@@ -35,10 +38,25 @@ new(_List, _BurstThreshold) ->
 insert(_Ref, _Key, _Value) ->
     ?NOT_LOADED.
 
+remove(_Ref, _Key, _Prefix) ->
+    ?NOT_LOADED.
+
+clear(_Ref) ->
+    ?NOT_LOADED.
+
 is_empty(_Ref) ->
     ?NOT_LOADED.
 
 size(_Ref) ->
+    ?NOT_LOADED.
+
+longest_prefix(_Ref, _Prefix) ->
+    ?NOT_LOADED.
+
+lookup(_Ref, _Prefix) ->
+    ?NOT_LOADED.
+
+is_member(_Ref, _Prefix) ->
     ?NOT_LOADED.
 
 get_burst_threshold(_Ref) ->
@@ -46,14 +64,6 @@ get_burst_threshold(_Ref) ->
 
 set_burst_threshold(_Ref, _BurstThreshold) ->
     ?NOT_LOADED.
-
-clear(_Ref) ->
-    ?NOT_LOADED.
-
-longest_prefix(_Ref, _Prefix) ->
-    ?NOT_LOADED.
-
-
 
 % internals
 

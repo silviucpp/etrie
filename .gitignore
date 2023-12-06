@@ -2,3 +2,6 @@
 /etrie.iml
 /_build/
 /priv/
+/DerivedData/
+/etrie_nif.xcodeproj/
+/.DS_Store

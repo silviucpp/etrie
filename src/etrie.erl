@@ -6,12 +6,16 @@
     from_list/1,
     from_list/2,
     insert/3,
+    remove/2,
+    remove_prefix/2,
+    clear/1,
     is_empty/1,
     size/1,
+    longest_prefix/2,
+    lookup/2,
+    is_member/2,
     get_burst_threshold/1,
-    set_burst_threshold/2,
-    clear/1,
-    longest_prefix/2
+    set_burst_threshold/2
 ]).
 
 -spec new() ->
@@ -44,6 +48,24 @@ from_list(Items, BurstThreshold) ->
 insert(Ref, Key, Value) ->
     etrie_nif:insert(Ref, Key, Value).
 
+-spec remove(reference(), binary()) ->
+    {ok, non_neg_integer()} | {error, any()}.
+
+remove(Ref, Key) ->
+    etrie_nif:remove(Ref, Key, false).
+
+-spec remove_prefix(reference(), binary()) ->
+    {ok, non_neg_integer()} | {error, any()}.
+
+remove_prefix(Ref, Key) ->
+    etrie_nif:remove(Ref, Key, true).
+
+-spec clear(reference()) ->
+    ok | {error, any()}.
+
+clear(Ref) ->
+    etrie_nif:clear(Ref).
+
 -spec is_empty(reference()) ->
     boolean().
 
@@ -56,6 +78,24 @@ is_empty(Ref) ->
 size(Ref) ->
     etrie_nif:size(Ref).
 
+-spec longest_prefix(reference(), binary()) ->
+    null | {ok, MatchingKey::term(), MatchingValue::term()} | {error, any()}.
+
+longest_prefix(Ref, Prefix) ->
+    etrie_nif:longest_prefix(Ref, Prefix).
+
+-spec lookup(reference(), binary()) ->
+    null | {ok, MatchingValue::term()} | {error, any()}.
+
+lookup(Ref, Prefix) ->
+    etrie_nif:lookup(Ref, Prefix).
+
+-spec is_member(reference(), binary()) ->
+    {ok, boolean()} | {error, any()}.
+
+is_member(Ref, Prefix) ->
+    etrie_nif:is_member(Ref, Prefix).
+
 -spec get_burst_threshold(reference()) ->
     non_neg_integer().
 
@@ -67,15 +107,3 @@ get_burst_threshold(Ref) ->
 
 set_burst_threshold(Ref, BurstThreshold) ->
     etrie_nif:set_burst_threshold(Ref, BurstThreshold).
-
--spec clear(reference()) ->
-    ok | {error, any()}.
-
-clear(Ref) ->
-    etrie_nif:clear(Ref).
-
--spec longest_prefix(reference(), binary()) ->
-    null | {ok, MatchingKey::term(), MatchingValue::term()} | {error, any()}.
-
-longest_prefix(Ref, Prefix) ->
-    etrie_nif:longest_prefix(Ref, Prefix).

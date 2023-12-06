@@ -14,6 +14,7 @@ ifeq ($(UNAME_SYS), darwin)
 				-Wl,-U,_enif_clear_env \
 				-Wl,-U,_enif_get_double \
 				-Wl,-U,_enif_get_int \
+				-Wl,-U,_enif_get_long \
 				-Wl,-U,_enif_get_ulong \
 				-Wl,-U,_enif_get_resource \
 				-Wl,-U,_enif_get_uint \
@@ -24,6 +25,7 @@ ifeq ($(UNAME_SYS), darwin)
 				-Wl,-U,_enif_is_identical \
 				-Wl,-U,_enif_is_list \
 				-Wl,-U,_enif_make_copy \
+				-Wl,-U,_enif_make_long \
 				-Wl,-U,_enif_make_ulong \
 				-Wl,-U,_enif_make_double \
 				-Wl,-U,_enif_make_atom \
@@ -33,6 +35,7 @@ ifeq ($(UNAME_SYS), darwin)
 				-Wl,-U,_enif_make_tuple \
 				-Wl,-U,_enif_binary_to_term \
 				-Wl,-U,_enif_term_to_binary \
+				-Wl,-U,_enif_term_type \
 				-Wl,-U,_enif_priv_data \
 				-Wl,-U,_enif_open_resource_type \
 				-Wl,-U,_enif_inspect_binary \

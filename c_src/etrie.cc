@@ -2,6 +2,7 @@
 #include "etrie_nif.h"
 #include "nif_utils.h"
 #include "macros.h"
+#include "nif_data_mapping.h"
 
 #include <tsl/htrie_map.h>
 #include <memory>
@@ -12,7 +13,7 @@ namespace {
 
 const size_t DEFAULT_BURST_THRESHOLD = 16384;
 const char kFailedToAllocResourceMsg[] = "enif_alloc_resource failed";
-typedef tsl::htrie_map<char, ErlNifBinary> TrieHashMap;
+typedef tsl::htrie_map<char, NifDataMapping> TrieHashMap;
 
 struct enif_etrie
 {
@@ -44,12 +45,7 @@ void nif_etrie_free(ErlNifEnv* env, void* obj)
     enif_etrie* data = static_cast<enif_etrie*>(obj);
 
     if(data->trie)
-    {
-        for(auto it = data->trie->begin(); it != data->trie->end(); ++it)
-            enif_release_binary(&it.value());
-
         delete data->trie;
-    }
 }
 
 ERL_NIF_TERM nif_etrie_new(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
@@ -77,7 +73,6 @@ ERL_NIF_TERM nif_etrie_new(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
     int arity;
 
     ErlNifBinary key;
-    ErlNifBinary value;
 
     while(enif_get_list_cell(env, list, &head, &list))
     {
@@ -87,21 +82,22 @@ ERL_NIF_TERM nif_etrie_new(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
         if(!get_binary(env, items[0], &key))
             return make_badarg(env);
 
-        if(!enif_term_to_binary(env, items[1], &value))
+        NifDataMapping value(env, items[1]);
+
+        if(!value.is_valid())
             return make_badarg(env);
+
         try
         {
-            enif_obj->trie->insert(std::string_view(BIN_TO_STR(key.data), key.size), value);
+            enif_obj->trie->insert_ks(BIN_TO_STR(key.data), key.size, std::move(value));
         }
         catch (std::exception &e)
         {
-            enif_release_binary(&value);
             return make_error(env, e.what());
         }
     }
 
-    ERL_NIF_TERM term = enif_make_resource(env, enif_obj.get());
-    return make_ok_result(env, term);
+    return make_ok_result(env, enif_make_resource(env, enif_obj.get()));
 }
 
 ERL_NIF_TERM nif_etrie_is_empty(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
@@ -165,9 +161,6 @@ ERL_NIF_TERM nif_etrie_clear(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]
     if(enif_obj == nullptr)
         return make_badarg(env);
 
-    for(auto it = enif_obj->trie->begin(); it != enif_obj->trie->end(); ++it)
-        enif_release_binary(&it.value());
-
     enif_obj->trie->clear();
     return ATOMS.atomOk;
 }
@@ -181,23 +174,69 @@ ERL_NIF_TERM nif_etrie_longest_prefix(ErlNifEnv* env, int argc, const ERL_NIF_TE
     if(enif_obj == nullptr)
         return make_badarg(env);
 
-    ErlNifBinary bin;
+    ErlNifBinary prefix;
 
-    if(!get_binary(env, argv[1], &bin))
+    if(!get_binary(env, argv[1], &prefix))
         return make_badarg(env);
 
     // Find longest match prefix.
-    auto longest_prefix = enif_obj->trie->longest_prefix(std::string_view(BIN_TO_STR(bin.data), bin.size));
+    auto longest_prefix = enif_obj->trie->longest_prefix_ks(BIN_TO_STR(prefix.data), prefix.size);
 
     if(longest_prefix == enif_obj->trie->end())
         return ATOMS.atomNull;
 
-    ERL_NIF_TERM bin_term;
-
-    if(enif_binary_to_term(env, longest_prefix.value().data, longest_prefix.value().size, &bin_term, 0) == 0)
+    ERL_NIF_TERM value_term;
+    if(!longest_prefix.value().to_nif(env, &value_term))
         return make_error(env, "failed to decode data");
 
-    return enif_make_tuple(env, 3, ATOMS.atomOk, make_binary(env, longest_prefix.key().c_str(), longest_prefix.key().size()),  bin_term);
+    return enif_make_tuple(env, 3, ATOMS.atomOk, make_binary(env, longest_prefix.key().c_str(), longest_prefix.key().size()), value_term);
+}
+
+ERL_NIF_TERM nif_etrie_lookup(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+    UNUSED(argc);
+
+    enif_etrie* enif_obj = get_enif_trie(env, argv[0]);
+
+    if(enif_obj == nullptr)
+        return make_badarg(env);
+
+    ErlNifBinary key;
+
+    if(!get_binary(env, argv[1], &key))
+        return make_badarg(env);
+
+    try
+    {
+        auto value = &enif_obj->trie->at_ks(BIN_TO_STR(key.data), key.size);
+        
+        ERL_NIF_TERM value_term;
+        if(!value->to_nif(env, &value_term))
+            return make_error(env, "failed to decode data");
+
+        return make_ok_result(env, value_term);
+    }
+    catch (std::out_of_range &ex)
+    {
+        return ATOMS.atomNull;
+    }
+}
+
+ERL_NIF_TERM nif_etrie_is_member(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+    UNUSED(argc);
+    
+    enif_etrie* enif_obj = get_enif_trie(env, argv[0]);
+    
+    if(enif_obj == nullptr)
+        return make_badarg(env);
+    
+    ErlNifBinary key;
+    
+    if(!get_binary(env, argv[1], &key))
+        return make_badarg(env);
+    
+    return make_ok_result(env, enif_obj->trie->count_ks(BIN_TO_STR(key.data), key.size)? ATOMS.atomTrue : ATOMS.atomFalse);
 }
 
 ERL_NIF_TERM nif_etrie_insert(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
@@ -210,25 +249,46 @@ ERL_NIF_TERM nif_etrie_insert(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[
         return make_badarg(env);
 
     ErlNifBinary key;
-    ErlNifBinary value;
+    NifDataMapping value(env, argv[2]);
 
-    if(!get_binary(env, argv[1], &key))
-        return make_badarg(env);
-
-    if(!enif_term_to_binary(env, argv[2], &value))
+    if(!get_binary(env, argv[1], &key) || !value.is_valid())
         return make_badarg(env);
 
     try
     {
-        enif_obj->trie->insert(std::string_view(BIN_TO_STR(key.data), key.size), value);
+        enif_obj->trie->insert_ks(BIN_TO_STR(key.data), key.size, std::move(value));
     }
     catch (std::exception &e)
     {
-        enif_release_binary(&value);
         return make_error(env, e.what());
     }
 
     return ATOMS.atomOk;
+}
+
+ERL_NIF_TERM nif_etrie_remove(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+    UNUSED(argc);
+
+    enif_etrie* enif_obj = get_enif_trie(env, argv[0]);
+
+    if(enif_obj == nullptr)
+        return make_badarg(env);
+
+    ErlNifBinary key;
+    bool prefix;
+    
+    if(!get_binary(env, argv[1], &key) || !get_boolean(argv[2], &prefix))
+        return make_badarg(env);
+
+    size_t elements;
+    
+    if(prefix)
+        elements = enif_obj->trie->erase_prefix_ks(BIN_TO_STR(key.data), key.size);
+    else
+        elements = enif_obj->trie->erase_ks(BIN_TO_STR(key.data), key.size);
+
+    return make_ok_result(env, enif_make_uint64(env, elements));
 }
 
 }
