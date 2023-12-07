@@ -12,7 +12,6 @@ namespace etrie {
 namespace {
 
 const size_t DEFAULT_BURST_THRESHOLD = 16384;
-const char kFailedToAllocResourceMsg[] = "enif_alloc_resource failed";
 typedef tsl::htrie_map<char, NifDataMapping> TrieHashMap;
 
 struct enif_etrie
@@ -20,15 +19,15 @@ struct enif_etrie
     TrieHashMap* trie;
 };
 
-enif_etrie* nif_etrie_new(etrie_data* data)
+inline enif_etrie* nif_etrie_new(etrie_data* data)
 {
     return static_cast<enif_etrie*>(enif_alloc_resource(data->resEtrieInstance, sizeof(enif_etrie)));
 }
 
-enif_etrie* get_enif_trie(ErlNifEnv* env, ERL_NIF_TERM term)
+inline enif_etrie* get_enif_trie(ErlNifEnv* env, ERL_NIF_TERM term)
 {
-    enif_etrie* enif_obj = nullptr;
     etrie_data* data = static_cast<etrie_data*>(enif_priv_data(env));
+    enif_etrie* enif_obj;
 
     if(enif_get_resource(env, term, data->resEtrieInstance, reinterpret_cast<void**>(&enif_obj)))
         return enif_obj;
@@ -58,13 +57,14 @@ ERL_NIF_TERM nif_etrie_new(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
     etrie_data* data = static_cast<etrie_data*>(enif_priv_data(env));
 
     scoped_ptr(enif_obj, enif_etrie, nif_etrie_new(data), enif_release_resource);
-    unsigned long burst_threshold = DEFAULT_BURST_THRESHOLD;
+
+    if(enif_obj.get() == NULL)
+        return make_error(env, "enif_alloc_resource failed");
+
+    ErlNifUInt64 burst_threshold = DEFAULT_BURST_THRESHOLD;
 
     if(argc > 1 && !enif_get_uint64(env, argv[1], &burst_threshold))
         return make_badarg(env);
-
-    if(enif_obj.get() == NULL)
-        return make_error(env, etrie::kFailedToAllocResourceMsg);
 
     enif_obj->trie = new TrieHashMap(burst_threshold);
 
@@ -180,16 +180,16 @@ ERL_NIF_TERM nif_etrie_longest_prefix(ErlNifEnv* env, int argc, const ERL_NIF_TE
         return make_badarg(env);
 
     // Find longest match prefix.
-    auto longest_prefix = enif_obj->trie->longest_prefix_ks(BIN_TO_STR(prefix.data), prefix.size);
+    auto it = enif_obj->trie->longest_prefix_ks(BIN_TO_STR(prefix.data), prefix.size);
 
-    if(longest_prefix == enif_obj->trie->end())
+    if(it == enif_obj->trie->end())
         return ATOMS.atomNull;
 
     ERL_NIF_TERM value_term;
-    if(!longest_prefix.value().to_nif(env, &value_term))
+    if(!it.value().to_nif(env, &value_term))
         return make_error(env, "failed to decode data");
 
-    return enif_make_tuple(env, 3, ATOMS.atomOk, make_binary(env, longest_prefix.key().c_str(), longest_prefix.key().size()), value_term);
+    return enif_make_tuple(env, 3, ATOMS.atomOk, make_binary(env, it.key()), value_term);
 }
 
 ERL_NIF_TERM nif_etrie_lookup(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
@@ -223,7 +223,7 @@ ERL_NIF_TERM nif_etrie_lookup(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[
 
             list = enif_make_list_cell(env, enif_make_tuple2(env, make_binary(env, key_buffer), value_term), list);
         }
-        
+
         return make_ok_result(env, list);
     }
     else
@@ -231,11 +231,11 @@ ERL_NIF_TERM nif_etrie_lookup(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[
         try
         {
             auto value = &enif_obj->trie->at_ks(BIN_TO_STR(key.data), key.size);
-            
+
             ERL_NIF_TERM value_term;
             if(!value->to_nif(env, &value_term))
                 return make_error(env, "failed to decode data");
-            
+
             return make_ok_result(env, value_term);
         }
         catch (std::out_of_range &ex)
@@ -243,7 +243,7 @@ ERL_NIF_TERM nif_etrie_lookup(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[
             return ATOMS.atomNull;
         }
     }
-    
+
 }
 
 ERL_NIF_TERM nif_etrie_is_member(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])

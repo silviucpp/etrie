@@ -1,10 +1,18 @@
 #include "nif_utils.h"
 #include "etrie_nif.h"
-#include "macros.h"
-
 #include <string.h>
 
 namespace etrie {
+
+namespace {
+    ERL_NIF_TERM make_binary(ErlNifEnv* env, const char* buff, size_t length)
+    {
+        ERL_NIF_TERM term;
+        uint8_t *destination_buffer = enif_make_new_binary(env, length, &term);
+        memcpy(destination_buffer, buff, length);
+        return term;
+    }
+};
 
 ERL_NIF_TERM make_atom(ErlNifEnv* env, const char* name)
 {
@@ -14,14 +22,6 @@ ERL_NIF_TERM make_atom(ErlNifEnv* env, const char* name)
         return ret;
 
     return enif_make_atom(env, name);
-}
-
-ERL_NIF_TERM make_binary(ErlNifEnv* env, const char* buff, size_t length)
-{
-    ERL_NIF_TERM term;
-    uint8_t *destination_buffer = enif_make_new_binary(env, length, &term);
-    memcpy(destination_buffer, buff, length);
-    return term;
 }
 
 ERL_NIF_TERM make_binary(ErlNifEnv* env, const std::string& str)
@@ -57,19 +57,6 @@ bool get_binary(ErlNifEnv* env, ERL_NIF_TERM term, ErlNifBinary* bin)
     return enif_inspect_iolist_as_binary(env, term, bin);
 }
 
-bool get_string(ErlNifEnv *env, ERL_NIF_TERM term, std::string* var)
-{
-    ErlNifBinary bin;
-
-    if(get_binary(env, term, &bin))
-    {
-        *var = std::string(reinterpret_cast<const char*>(bin.data), bin.size);
-        return true;
-    }
-
-    return false;
-}
-
 bool get_boolean(ERL_NIF_TERM term, bool* val)
 {
     if(enif_is_identical(term, ATOMS.atomTrue))
@@ -85,20 +72,6 @@ bool get_boolean(ERL_NIF_TERM term, bool* val)
     }
 
     return false;
-}
-
-bool get_double(ErlNifEnv* env, ERL_NIF_TERM term, double *d)
-{
-    if(!enif_get_double(env, term, d))
-    {
-        int int_value;
-        if(!enif_get_int(env, term, &int_value))
-            return false;
-
-        *d = static_cast<double>(int_value);
-    }
-
-    return true;
 }
 
 }

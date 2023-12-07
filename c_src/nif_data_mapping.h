@@ -11,19 +11,10 @@ namespace etrie {
 class NifDataMapping {
 
 public:
-     enum ErlangDataType {
-        UNSPECIFIED,
-        ATOM,
-        BITSTRING,
-        DOUBLE,
-        INT64,
-        UINT64,
-        BIN_TERM
-    };
 
     NifDataMapping(ErlNifEnv* env, ERL_NIF_TERM term);
     ~NifDataMapping();
-    
+
     NifDataMapping(NifDataMapping&& other) noexcept;
     NifDataMapping& operator=(NifDataMapping&& other) noexcept;
 
@@ -31,7 +22,18 @@ public:
     bool to_nif(ErlNifEnv* env, ERL_NIF_TERM* term) const;
 
 private:
+
     DISALLOW_IMPLICIT_CONSTRUCTORS(NifDataMapping);
+
+    enum ErlangDataType {
+       UNSPECIFIED,
+       ATOM,
+       BITSTRING,
+       DOUBLE,
+       INT64,
+       UINT64,
+       BIN_TERM
+   };
 
     ErlangDataType type_;
     std::variant<std::string, double, ErlNifSInt64, ErlNifUInt64, ErlNifBinary> value_;

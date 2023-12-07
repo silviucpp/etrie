@@ -1,5 +1,4 @@
 #include "nif_data_mapping.h"
-#include "macros.h"
 #include "nif_utils.h"
 
 namespace etrie {
@@ -72,8 +71,7 @@ NifDataMapping::~NifDataMapping()
 {
     if(type_ == ErlangDataType::BIN_TERM)
     {
-        ErlNifBinary bin = std::get<ErlNifBinary>(value_);
-        enif_release_binary(&bin);
+        enif_release_binary(&std::get<ErlNifBinary>(value_));
     }
 }
 
