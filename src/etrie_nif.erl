@@ -57,7 +57,7 @@ longest_prefix(_Ref, _IsPrefix) ->
 lookup(_Ref, _Key, _IsPrefix) ->
     ?NOT_LOADED.
 
-is_member(_Ref, _Prefix) ->
+is_member(_Ref, _Key) ->
     ?NOT_LOADED.
 
 to_list(_Ref) ->

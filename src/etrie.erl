@@ -107,8 +107,8 @@ lookup_range(Ref, Prefix) ->
 -spec is_member(reference(), binary()) ->
     {ok, boolean()} | {error, any()}.
 
-is_member(Ref, Prefix) ->
-    etrie_nif:is_member(Ref, Prefix).
+is_member(Ref, Key) ->
+    etrie_nif:is_member(Ref, Key).
 
 -spec get_burst_threshold(reference()) ->
     non_neg_integer().
