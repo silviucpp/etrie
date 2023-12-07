@@ -63,10 +63,68 @@ ok = etrie:insert(T, <<"four">>, 4),
 - `get_burst_threshold(Ref)` - Gets the current burst threshold value.
 - `set_burst_threshold(Ref, BurstThreshold)` - Adjusts the burst threshold value.
 
+## Benchmark
+
+The benchmarking process is facilitated by the Erlang module (`benchmarks/benchmark.erl`), which reads a designated dataset line by line. Each line in the dataset represents a key in the trie, and its associated value is the line number.
+The dataset is utilized to perform various operations such as insertions, reads, and deletions, with the elapsed time measured for each operation.
+
+The dataset used represents all the titles from the main namespace of the [Wikipedia archive][3].
+
+To run the benchmark:
+
+```erlang
+make benchmark MODULE=etrie DATASET=/Downloads/enwiki-latest-all-titles-in-ns0 LIMIT=1000000
+```
+
+Where:
+
+- `MODULE`: the library used to benchmark. Can be one of : `etrie`, `ok_btrie` or `ok_trie`.
+- `DATASET`: file path of the dataset.
+- `LIMIT`: Maximum number of items to load from dataset. If < 1 then load the entire dataset.
+
+### Results
+
+Unfortunately the [okeuday trie][4] implementation (`ok_btrie`  and `ok_trie`) it's pretty slow and I had to limit the number of items to 2 millions. 
+
+Results are:
+
+```
+etrie:insert Time -> operations: 2000000 elapsed: 881.1570 ms, 440.5785 ns/key
+etrie:lookup Time -> operations: 2000000 elapsed: 454.7810 ms, 227.3905 ns/key
+etrie:remove Time -> operations: 2000000 elapsed: 532.2440 ms, 266.1220 ns/key
+
+ok_btrie:insert Time -> operations: 2000000 elapsed: 60761.0590 ms, 30380.5295 ns/key
+ok_btrie:lookup Time -> operations: 2000000 elapsed: 5925.6150 ms, 2962.8075 ns/key
+ok_btrie:remove Time -> operations: 2000000 elapsed: 38510.2600 ms, 19255.1300 ns/key
+
+ok_trie:insert Time -> operations: 2000000 elapsed: 61013.2730 ms, 30506.6365 ns/key
+ok_trie:lookup Time -> operations: 2000000 elapsed: 2283.5370 ms, 1141.7685 ns/key
+ok_trie:remove Time -> operations: 2000000 elapsed: 35662.8770 ms, 17831.4385 ns/key
+
+```
+
+### Memory usage
+
+I faced difficulty in finding an appropriate method to programmatically measure the memory consumption specifically utilized by the trie itself across different libraries. The challenge stems from the fact that the memory allocation by the `etrie` NIFs is not exclusively performed with `enif_*` methods. Consequently, Erlang lacks detailed statistics regarding the memory allocated directly through native C++ allocation methods.
+To gain an understanding of memory allocation, I manually observed the memory usage of the `beam.smp` process using the `Activity Monitor` on OSX. 
+
+Of course the memory reported contains many other things beside the one used by the trie itself but because of the big gap it's clear that `etrie` uses less memory.   
+
+Results are:
+
+```sh
+etrie: 680 MB
+ok_btrie: 4.67 GB
+ok_trie: 5.42 GB
+```
+
+**Note:** The test employs the line index as a value, which is an `integer`. `etrie` stores values of types such as `atom`, `numeric`, or `binary string` as native data (`uint64`, `int64`, or `double` for atoms and numeric data, and `std::string` for binary strings). It's essential to note that there may be some additional overhead introduced by the wrappers and the use of `std::variant` (a C++ type-safe `union`). But for other data types like lists, tuples, etc., the storage is done by encoding the value using `erlang:term_to_binary`, which may contribute to additional CPU usage and memory consumption.
+
 ## Tests
 
 In order to run the integrity tests run `rebar3 eunit` from project root.
 
 [1]: https://github.com/Tessil/hat-trie
 [2]: https://tessil.github.io/2017/06/22/hat-trie.html
-
+[3]: https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-all-titles-in-ns0.gz
+[4]: https://github.com/okeuday/trie
