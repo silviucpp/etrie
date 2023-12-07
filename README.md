@@ -12,9 +12,12 @@
 - An `etrie` reference is garbage-collected by the Erlang VM when there is no longer any reference to it. References can be stored, passed between processes on the same node, and stored in an ETS table.
 - Methods such as `new/1`, `from_list/1`, `from_list/2`, `to_list/1` are implemented as dirty NIFs to handle large lists efficiently and prevent Erlang scheduler blocking.
 
-- The library provides an efficient and compact way to store a map of strings by compressing common prefixes. It also allows searching for keys that match a prefix.
+### Notes
 
-**Note**: *The default parameters are optimized for exact searches. If you perform many prefix searches, consider adjusting the **burst threshold** through the `*_burst_threshold` methods or during structure creation.*
+- The library provides an efficient and compact way to store a map of strings by compressing common prefixes. It also allows searching for keys that match a prefix.
+- The default parameters are optimized for exact searches. If you perform many prefix searches, consider adjusting the **burst threshold** `(default to 16384)` through the `*_burst_threshold` methods or during structure creation.
+- Keys must be binary strings, and the maximum key size is limited to `65534` bytes.
+- The capacity of the HAT-Trie is restricted to a maximum of `4294967296` items.
 
 ## Quick Start
 
