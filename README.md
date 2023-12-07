@@ -11,6 +11,7 @@ A Fast and Memory-Efficient HAT-Trie Implementation Based on [Tessil hat-trie][1
 - The `etrie` data structure reference should be operated from the same process where it was created to avoid concurrent operations.
 - An `etrie` reference is garbage-collected by the Erlang VM when there is no longer any reference to it. References can be stored, passed between processes on the same node, and stored in an ETS table.
 - Methods such as `new/1`, `from_list/1`, `from_list/2`, `to_list/1` are implemented as dirty NIFs to handle large lists efficiently and prevent Erlang scheduler blocking.
+- `etrie` stores the HAT-Trie values of types such as atoms, numeric, or binary strings as native data (`uint64`, `int64`, or `double` for numeric data, `uint64` for atoms and `std::string` for binary strings). The other data types like lists, tuples, etc., the storage is done by encoding the value using `erlang:term_to_binary`, which may contribute to additional CPU usage and memory consumption. It's essential to note that beside the data type itself there is some other additional overhead introduced by the wrappers and the use of `std::variant` (a C++ type-safe `union`) but should be insignificant.
 
 ### Notes
 
@@ -118,7 +119,7 @@ ok_btrie: 4.67 GB
 ok_trie: 5.42 GB
 ```
 
-**Note:** The test employs the line index as a value, which is an `integer`. `etrie` stores values of types such as `atom`, `numeric`, or `binary string` as native data (`uint64`, `int64`, or `double` for atoms and numeric data, and `std::string` for binary strings). It's essential to note that there may be some additional overhead introduced by the wrappers and the use of `std::variant` (a C++ type-safe `union`). But for other data types like lists, tuples, etc., the storage is done by encoding the value using `erlang:term_to_binary`, which may contribute to additional CPU usage and memory consumption.
+**Note:** The test employs the line index as a value, which is an `integer` and stored by `etrie` as a native data type. For other values lie tuples, lists, (see `Implementation Details` section) there might be additional overhead caused by `term_to_binary` encoding. 
 
 ## Tests
 
