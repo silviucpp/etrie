@@ -1,10 +1,10 @@
 # etrie
 
-[![Build Status](https://travis-ci.com/silviucpp/etrie.svg?branch=master)](https://travis-ci.com/github/silviucpp/etrie)
-[![GitHub](https://img.shields.io/github/license/silviucpp/etrie)](https://github.com/silviucpp/etrie/blob/master/LICENSE)
+[![Build Status](https://travis-ci.com/silviucpp/etrie.svg?branch=main)](https://travis-ci.com/github/silviucpp/etrie)
+[![GitHub](https://img.shields.io/github/license/silviucpp/etrie)](https://github.com/silviucpp/etrie/blob/main/LICENSE)
 [![Hex.pm](https://img.shields.io/hexpm/v/etrie)](https://hex.pm/packages/etrie)
 
-**A Fast and Memory-Efficient HAT-Trie Implementation Based on [Tessil hat-trie][1] (NIF based). Learn more about the HAT-Trie data structure [here][2].**
+A Fast and Memory-Efficient HAT-Trie Implementation Based on [Tessil hat-trie][1] (NIF based). Learn more about the HAT-Trie data structure [here][2].
 
 ## Implementation Details
 
@@ -82,7 +82,7 @@ Where:
 - `DATASET`: file path of the dataset.
 - `LIMIT`: Maximum number of items to load from dataset. If < 1 then load the entire dataset.
 
-### Results
+#### Results
 
 Unfortunately the [okeuday trie][4] implementation (`ok_btrie`  and `ok_trie`) it's pretty slow and I had to limit the number of items to 2 millions. 
 
@@ -103,7 +103,7 @@ ok_trie:remove Time -> operations: 2000000 elapsed: 35662.8770 ms, 17831.4385 ns
 
 ```
 
-### Memory usage
+#### Memory usage
 
 I faced difficulty in finding an appropriate method to programmatically measure the memory consumption specifically utilized by the trie itself across different libraries. The challenge stems from the fact that the memory allocation by the `etrie` NIFs is not exclusively performed with `enif_*` methods. Consequently, Erlang lacks detailed statistics regarding the memory allocated directly through native C++ allocation methods.
 To gain an understanding of memory allocation, I manually observed the memory usage of the `beam.smp` process using the `Activity Monitor` on OSX. 
