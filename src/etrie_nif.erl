@@ -51,7 +51,7 @@ is_empty(_Ref) ->
 size(_Ref) ->
     ?NOT_LOADED.
 
-longest_prefix(_Ref, _IsPrefix) ->
+longest_prefix(_Ref, _Prefix) ->
     ?NOT_LOADED.
 
 lookup(_Ref, _Key, _IsPrefix) ->

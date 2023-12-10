@@ -40,6 +40,7 @@ ifeq ($(UNAME_SYS), darwin)
 				-Wl,-U,_enif_term_type \
 				-Wl,-U,_enif_priv_data \
 				-Wl,-U,_enif_open_resource_type \
+				-Wl,-U,_enif_keep_resource \
 				-Wl,-U,_enif_inspect_binary \
 				-Wl,-U,_enif_make_badarg
 endif

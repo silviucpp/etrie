@@ -36,6 +36,17 @@ data_type_mapping_test() ->
     ?assertEqual(ok, etrie:clear(T)),
     ok.
 
+nested_trie_test() ->
+    {ok, T} = etrie:new(),
+    Pid = spawn(fun() ->
+        {ok, T2} = etrie:from_list([{<<"apple">>, 1}]),
+        ?assertEqual(ok, etrie:insert(T, <<"trie2">>, T2))
+    end),
+
+    ok = wait_process(Pid),
+    {ok, Ref} = etrie:lookup(T, <<"trie2">>),
+    ?assertEqual({ok, 1}, etrie:lookup(Ref, <<"apple">>)).
+
 basic_ops_test() ->
     {ok, T} = etrie:new(),
     ?assertEqual(0, etrie:size(T)),
@@ -92,7 +103,7 @@ insert_with_too_long_string_test() ->
     ?assertEqual({error,<<"Key is too long.">>}, etrie:insert(T, LongString1, ?MAX_KEY_SIZE+1)),
     ok.
 
-test_longest_prefix_test() ->
+longest_prefix_test() ->
     {ok, T} = etrie:from_list([
         {<<"a">>, a},
         {<<"aa">>, aa},
@@ -135,3 +146,11 @@ test_longest_prefix_test() ->
 
 build_binary(Char, MaxSize) when is_integer(MaxSize), MaxSize >= 0 ->
     <<Char:MaxSize/unit:8>>.
+
+wait_process(Pid) ->
+    case is_process_alive(Pid) of
+        false ->
+            ok;
+        _ ->
+            wait_process(Pid)
+    end.

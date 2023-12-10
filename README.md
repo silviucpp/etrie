@@ -19,6 +19,7 @@ A Fast and Memory-Efficient HAT-Trie Implementation Based on [Tessil hat-trie][1
 - The default parameters are optimized for exact searches. If you perform many prefix searches, consider adjusting the **burst threshold** `(default to 16384)` through the `*_burst_threshold` methods or during structure creation.
 - Keys must be binary strings, and the maximum key size is limited to `65534` bytes.
 - The capacity of the HAT-Trie is restricted to a maximum of `4294967296` items.
+- Due to the limitations of the NIF API, references returned from other NIFs are encoded using `term_to_binary/1`. If you do not store a reference to these externally, there is a possibility that they may be subject to garbage collection. It is important to note that references to `etrie` objects are appropriately managed.
 
 ## Quick Start
 

@@ -6,6 +6,8 @@
 namespace etrie {
 
 void nif_etrie_free(ErlNifEnv* env, void* obj);
+void* get_abstract_trie_object(ErlNifEnv* env, ERL_NIF_TERM term);
+
 ERL_NIF_TERM nif_etrie_new(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]);
 ERL_NIF_TERM nif_etrie_is_empty(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]);
 ERL_NIF_TERM nif_etrie_size(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]);

@@ -37,6 +37,11 @@ inline enif_etrie* get_enif_trie(ErlNifEnv* env, ERL_NIF_TERM term)
 
 }
 
+void* get_abstract_trie_object(ErlNifEnv* env, ERL_NIF_TERM term)
+{
+    return get_enif_trie(env, term);
+}
+
 void nif_etrie_free(ErlNifEnv* env, void* obj)
 {
     UNUSED(env);

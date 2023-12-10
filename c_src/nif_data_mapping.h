@@ -25,18 +25,35 @@ private:
 
     DISALLOW_IMPLICIT_CONSTRUCTORS(NifDataMapping);
 
+    class EtrieScope
+    {
+    public:
+
+        explicit EtrieScope(void* trie);
+        ~EtrieScope();
+        EtrieScope(EtrieScope&& other);
+        EtrieScope& operator=(EtrieScope&& other);
+
+        void* ptr() const {return trie_;}
+
+    private:
+        DISALLOW_IMPLICIT_CONSTRUCTORS(EtrieScope);
+        void* trie_;
+    };
+
     enum ErlangDataType {
-       UNSPECIFIED,
-       ATOM,
-       BITSTRING,
-       DOUBLE,
-       INT64,
-       UINT64,
-       BIN_TERM
+        UNSPECIFIED,
+        ATOM,
+        BITSTRING,
+        DOUBLE,
+        INT64,
+        UINT64,
+        BIN_TERM,
+        TRIE
    };
 
     ErlangDataType type_;
-    std::variant<std::string, double, ErlNifSInt64, ErlNifUInt64, ErlNifBinary> value_;
+    std::variant<std::string, double, ErlNifSInt64, ErlNifUInt64, ErlNifBinary, EtrieScope> value_;
 };
 
 }

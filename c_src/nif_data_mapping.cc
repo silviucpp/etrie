@@ -1,7 +1,39 @@
 #include "nif_data_mapping.h"
 #include "nif_utils.h"
+#include "etrie_nif.h"
+#include "etrie.h"
 
 namespace etrie {
+
+// EtrieScope
+
+NifDataMapping::EtrieScope::EtrieScope(void* trie) : trie_(trie)
+{
+    enif_keep_resource(trie_);
+}
+
+NifDataMapping::EtrieScope::~EtrieScope()
+{
+    if(trie_)
+        enif_release_resource(trie_);
+}
+
+NifDataMapping::EtrieScope::EtrieScope(EtrieScope&& other)
+{
+    *this = std::move(other);
+}
+
+NifDataMapping::EtrieScope& NifDataMapping::EtrieScope::operator=(NifDataMapping::EtrieScope&& other)
+{
+    if (this != &other)
+    {
+        trie_ = other.trie_;
+        other.trie_ = nullptr;
+   }
+   return *this;
+}
+
+// NifDataMapping
 
 NifDataMapping::NifDataMapping(ErlNifEnv* env, ERL_NIF_TERM term): type_(ErlangDataType::UNSPECIFIED)
 {
@@ -50,6 +82,16 @@ NifDataMapping::NifDataMapping(ErlNifEnv* env, ERL_NIF_TERM term): type_(ErlangD
                 type_ = ErlangDataType::UINT64;
              }
              break;
+        }
+        case ERL_NIF_TERM_TYPE_REFERENCE:
+        {
+            void* trie = get_abstract_trie_object(env, term);
+
+            if(trie)
+            {
+                value_ = EtrieScope(trie);
+                type_ = TRIE;
+            }
         }
 
         default:
@@ -121,6 +163,12 @@ bool NifDataMapping::to_nif(ErlNifEnv* env, ERL_NIF_TERM* term) const
             {
                 ErlNifBinary bin = std::get<ErlNifBinary>(value_);
                 return enif_binary_to_term(env, bin.data, bin.size, term, 0) != 0;
+            }
+
+            case TRIE:
+            {
+                *term = enif_make_resource(env,std::get<EtrieScope>(value_).ptr());
+                return true;
             }
 
             default:
