@@ -1,6 +1,6 @@
 # etrie
 
-[![Build Status](https://travis-ci.com/silviucpp/etrie.svg?branch=main)](https://travis-ci.com/github/silviucpp/etrie)
+[![Build Status](https://app.travis-ci.com/silviucpp/etrie.svg?branch=main)](https://travis-ci.com/github/silviucpp/etrie)
 [![GitHub](https://img.shields.io/github/license/silviucpp/etrie)](https://github.com/silviucpp/etrie/blob/main/LICENSE)
 [![Hex.pm](https://img.shields.io/hexpm/v/etrie)](https://hex.pm/packages/etrie)
 

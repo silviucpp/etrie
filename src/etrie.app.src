@@ -2,7 +2,7 @@
     {description, "An OTP application implementing a fast and memory efficient HAT-trie"},
     {licenses, ["MIT"]},
     {links,[{"Github","https://github.com/silviucpp/etrie"}]},
-    {vsn, "1.1.0"},
+    {vsn, "1.2.0"},
     {registered, []},
     {applications, [
         kernel,
