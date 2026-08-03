@@ -44,14 +44,14 @@ from_list(Items) ->
 from_list(Items, BurstThreshold) ->
     etrie_nif:new(Items, BurstThreshold).
 
--spec insert(reference(), binary(), term()) ->
-    ok | {error, any()}.
-
 -spec to_list(reference()) ->
     {ok, [{binary(), term()}]} | {error, any()}.
 
 to_list(Ref) ->
     etrie_nif:to_list(Ref).
+
+-spec insert(reference(), binary(), term()) ->
+    ok | {error, any()}.
 
 insert(Ref, Key, Value) ->
     etrie_nif:insert(Ref, Key, Value).
